@@ -1,26 +1,20 @@
-import type { NextPage } from 'next';
+import type {NextPage} from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
-import { useRef, useState } from 'react';
-import { Toaster, toast } from 'react-hot-toast';
-import DropDown, { VibeType } from '../components/DropDown';
+import {useRef, useState} from 'react';
+import {Toaster} from 'react-hot-toast';
+import DropDown, {VibeType} from '../components/DropDown';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import LoadingDots from '../components/LoadingDots';
-import {
-  createParser,
-  ParsedEvent,
-  ReconnectInterval,
-} from 'eventsource-parser';
 import Toggle from '../components/Toggle';
+
 
 const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
   const [bio, setBio] = useState('');
   const [vibe, setVibe] = useState<VibeType>('Stanford');
   const [generatedBios, setGeneratedBios] = useState<String>('');
-  const [isGPT, setIsGPT] = useState(false);
-
   const bioRef = useRef<null | HTMLDivElement>(null);
 
   const scrollToBios = () => {
@@ -32,18 +26,14 @@ const Home: NextPage = () => {
   const prompt = `Generate a list of documents for the IRB submission with the institution is ${
     vibe === 'Stanford' ? 'stanford' : 'default institution'
   } and the protocol is: ${bio}${bio.slice(-1) === '.' ? '' : '.'}. Seperate each document in the list with a <br /> at the end.`;
-  
 
-  console.log({ prompt });
-  console.log({ generatedBios });
 
   const generateBio = async (e: any) => {
     e.preventDefault();
     setGeneratedBios('');
     setLoading(true);
-    console.log("Calling API with isGPT value:", isGPT);
 
-    const response = await fetch(isGPT ? '/api/openai' : '/api/claude', {
+    const response = await fetch('/api/claude', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,60 +54,19 @@ const Home: NextPage = () => {
     if (!data) {
       return;
     }
-    console.log(data)
 
-    const onParseGPT = (event: ParsedEvent | ReconnectInterval) => {
-      if (event.type === 'event') {
-        console.log("Hello, World!");
-        const data = event.data;
-        try {
-          const text = JSON.parse(data).text ?? '';
-          setGeneratedBios((prev) => prev + text);
-        } catch (e) {
-          console.error(e);
-        }
-      }
+    const onParseClaude = (chunkValue: string) => {
+      setGeneratedBios((prev) => prev + chunkValue);
     };
 
-    const onParseMistral = (event: ParsedEvent | ReconnectInterval) => {
-      if (event.type === 'event') {
-        const data = event.data;
-        try {
-          const text = JSON.parse(data).choices[0].text ?? '';
-          setGeneratedBios((prev) => prev + text);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    };
-
-    const onParseClaude = (event: ParsedEvent | ReconnectInterval) => {
-      
-      if (event.type === 'event') {
-        console.log("Hello, World!");
-        const data = event.data;
-        try {
-          const text = JSON.parse(data).choices[0].text ?? '';
-          setGeneratedBios((prev) => prev + text);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      console.log("Hello, World2!");
-    };
-
-    const onParse = isGPT ? onParseGPT : onParseClaude;
-
-    // https://web.dev/streams/#the-getreader-and-read-methods
     const reader = data.getReader();
     const decoder = new TextDecoder();
-    const parser = createParser(onParse);
     let done = false;
     while (!done) {
       const { value, done: doneReading } = await reader.read();
       done = doneReading;
       const chunkValue = decoder.decode(value);
-      parser.feed(chunkValue);
+      onParseClaude(chunkValue);
     }
     scrollToBios();
     setLoading(false);
@@ -138,10 +87,6 @@ const Home: NextPage = () => {
         <h1 className="sm:text-6xl text-4xl max-w-[708px] font-bold text-slate-900">
           Generate all documents for IRB Submission using AI
         </h1>
-        <div className="mt-7">
-          <Toggle isGPT={isGPT} setIsGPT={setIsGPT} />
-        </div>
-
         <div className="max-w-xl w-full">
           <div className="flex mt-10 items-center space-x-3">
             <Image
@@ -224,9 +169,9 @@ const Home: NextPage = () => {
                 .substring(generatedBios.indexOf('1'))
                 // .replace(/(\d\.\s)/g, '<br />$1')
             }}
-            
-            
-            
+
+
+
           />
       </div>
             </>
