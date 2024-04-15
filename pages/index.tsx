@@ -7,19 +7,11 @@ import DropDown, {VibeType} from '../components/DropDown';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import LoadingDots from '../components/LoadingDots';
-// import TextEditor from '../components/TextEditor';
-import Tiptap from '../components/Tiptap';
+import Link from 'next/link';
+
 
 const Home: NextPage = () => {
 
-  const App = () => {
-    return (
-      <div className="App">
-        <Tiptap />
-      </div>
-    )
-  }
-  
   const [loading, setLoading] = useState(false);
   const [bio, setBio] = useState('');
   const [vibe, setVibe] = useState<VibeType>('Stanford');
@@ -186,7 +178,12 @@ const Home: NextPage = () => {
             </>
           )}
         </div>
+        
       </main>
+      <div className="my-4">
+        <Link href="/editor">Go to the Editor
+        </Link>
+      </div>
       <Footer />
     </div>
   );

@@ -1,22 +1,22 @@
-// import React, { useEffect, useState } from 'react';
-// import { useEditor, EditorContent, FloatingMenu, BubbleMenu } from '@tiptap/react'
-// import StarterKit from '@tiptap/starter-kit';
+"use client";
 
-// const extensions = [
-//   StarterKit,
-// ]
+import { EditorContent, EditorRoot } from "novel";
+import { useState, FC } from "react";
 
-// const content = '<p>Hello World!</p>'
+const TailwindEditor: FC = () => {
+  const [content, setContent] = useState<any | null>(null);
 
-// const TextEditor = () => {
-//   return (
-//     <EditorProvider extensions={extensions} content={content}>
-//       <FloatingMenu>This is the floating menu</FloatingMenu>
-//       <BubbleMenu>This is the bubble menu</BubbleMenu>
-//     </EditorProvider>
-//   )
-//   };
+  return (
+    <EditorRoot>
+      <EditorContent
+        initialContent={content}
+        onUpdate={({ editor }) => {
+          const json = editor.getJSON();
+          setContent(json);
+        }}
+      />
+    </EditorRoot>
+  );
+};
 
-
-// export default TextEditor;
-
+export default TailwindEditor;
